@@ -1,34 +1,40 @@
 output "id" {
-  value       = "${local.id}"
+  value       = "${join("", null_resource.default.*.triggers.id)}"
   description = "Disambiguated ID"
 }
 
 output "name" {
-  value       = "${local.name}"
+  value       = "${join("", null_resource.default.*.triggers.name)}"
   description = "Normalized name"
 }
 
 output "namespace" {
-  value       = "${local.namespace}"
+  value       = "${join("", null_resource.default.*.triggers.namespace)}"
   description = "Normalized namespace"
 }
 
 output "stage" {
-  value       = "${local.stage}"
+  value       = "${join("", null_resource.default.*.triggers.stage)}"
   description = "Normalized stage"
 }
 
 output "attributes" {
-  value       = "${local.attributes}"
+  value       = "${join("", null_resource.default.*.triggers.attributes)}"
   description = "Normalized attributes"
 }
 
+# Merge input tags with our tags.
+# Note: `Name` has a special meaning in AWS and we need to disamgiuate it by using the computed `id`
 output "tags" {
-  value       = "${local.tags}"
-  description = "Normalized Tag map"
-}
+  value = "${
+      merge( 
+        map(
+          "Name", "${join("", null_resource.default.*.triggers.id)}",
+          "Namespace", "${join("", null_resource.default.*.triggers.namespace)}",
+          "Stage", "${join("", null_resource.default.*.triggers.stage)}"
+        ), var.tags
+      )
+    }"
 
-output "tags_as_list_of_maps" {
-  value       = ["${local.tags_as_list_of_maps}"]
-  description = "Additional tags as a list of maps, which can be used in several AWS resources"
+  description = "Normalized Tag map"
 }
